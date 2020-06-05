@@ -1,0 +1,11 @@
+
+cd to python install / scripts
+
+run:
+
+./pip install <module name>
+
+
+upgrade pip with:
+
+python -m pip install --upgrade pip

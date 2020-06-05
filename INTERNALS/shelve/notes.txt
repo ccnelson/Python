@@ -1,0 +1,1 @@
+shelf doesnt use a filename extension when opening a file

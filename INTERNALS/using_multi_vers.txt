@@ -1,0 +1,9 @@
+download both 2.7.6 and 3.3.4. 
+cntrl_pnl>system>advanvced>environment variables
+Add C:\Python27;C:\Python33;
+
+copy python.exe in \python27 rename python2
+copy python.exe in \python34 rename python3  #do this or pip will break
+
+Test: open up commmand prompt and type python2 ....BOOM! Python 2.7.6. exit out.
+Test: open up commmand prompt and type python3 ....BOOM! Python 3.4.3. exit out.
