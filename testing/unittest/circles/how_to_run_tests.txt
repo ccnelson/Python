@@ -1,0 +1,8 @@
+
+(from directory containing relevant files)
+
+$python -m unittest test_circles
+
+OR MORE SIMPLY (uses test discovery)
+
+python -m unittest
