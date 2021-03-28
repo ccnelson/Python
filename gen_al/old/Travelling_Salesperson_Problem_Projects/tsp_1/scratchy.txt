@@ -1,0 +1,184 @@
+###########################
+# Notes to accompany gen_algo.py
+# CHRIS NELSON 2018
+###########################
+
+Checking distances:
+distances checked using 2 points and the following website
+https://ncalculators.com/geometry/length-between-two-points-calculator.htm
+
+Fitness calculation:
+1/distance gives high score for low distance
+formula: F(x)=1/x
+This can be adjusted for easier readability, ie:
+F(x)=1000/x will give values closer to 1 for
+distances around 1000
+
+Population variance:
+Monitoring the variance of the population will allow
+termination once values converge
+
+Sigma scaling:
+Sigma uses standard deviation to adjust likelihood of
+reproduction. Sigma scaling simple ranked scores will not
+work because the standard deviation (spread) will always remain
+the same.
+
+Sigma research:
+Sigma scaling appears to boost scores when they are high, and very different
+to other scores, but penalise scores which are similar to others scores
+
+AITFGP:
+AI Techniques for Game programming has been helpful, but its equations for
+scaling seem a bit off. For example initial score scaling is
+performed via (fitness / avg. fitness)
+Boltzmann scaling is then suggested via ((fitness / temperature) / (avg. fitnesss / temperature))
+These two formulas have the same result regardless of the value of temperature (temperature starts
+off relating to population size and decreases incrementally each generation).
+EXAMPLE:
+fitness = 8, avg = 5, temp - 100
+scale score = 1.6
+boltzman = (fitness / temp) / (avg / temp) = 1.6
+		         8  / 100   /   5  /  100
+		          0.08	    /     0.05
+This brings into question the validity of the sigma scaling techinques, which I
+cant get to do anything either.
+
+
+REVERSE PERMUTATIONS:
+Need to find a way to remove reverse alternatives from parent choices
+
+
+INLINE CROSSOVER & MUTATION:
+Upon studying the results of a typlical run, it was discovered that crossover & mutation was affecting the
+parent value inline, that is to say the crossover and mutation happened on the parent AND the child. Each successive
+coupling would further mutate the parent away from its base value. This was discovered reading the PARENT:CHILD info
+section. This must have increased the randomness of the algorithm, which is confusing considering it seeming ability to
+consistently deal with some harder problems. Anyway I havent tested much at this point, but according to the
+PARENT:CHILD readout the parents now remain unaffected. This was achieved by simply refering to them via list() which
+ensure a seperate local copy is made i.e. in 'a = list(x)' a is now an independant coopy of x, as opposed to 'a = x'
+in which now a is a symbolic link to x. This is Pythons default list behaviour.
+
+TABU SEARCH:
+
+#####################
+TESTS:
+#####################
+30/06/18 Settings: 15 loc, 5000 init pop, injectprop=true, strongestsruvive=false, pbx, insertion
+SOLVED in 10 generations, (6520 total pop)
+Possible combinations: '1,307,674,368,000' (1.3 trillion)
+#####################
+30/06/18 Introduction of tabu filter to parent lists
+Settings: 13 loc, 1500 init pop, injectprop=false, strongestsurvive=false, pbx, insertion, tabufilter=true
+Possible combinations: '6,227,020,800' (6.2 billion)
+#####################
+02/07/2018 Settings: 20 loc, 5000 init pop, injectprop=true(for good 50 generations, then false), strongestsurvive=false
+pbx, exchange, tabufilter=true
+Possible combinations: '2,432,902,008,176,640,000' (2.4 quintillion) -! 2 destinations out of sync
+
+###########################################################
+HATCHING A NEW PLAN : 06/07/2018
+
+Having successfully introduced matplotlib via anaconda, its time to
+experiment with some of the other packages associated with datascience.
+Numpy and pandas appear useful, getting to grips with them will hopefully
+prove valuable later.
+
+Some preliminary experiments with pandas shows it will be nice for displaying
+info, as the GUI definately needs clearing up (4 text outputs?!)
+
+! DONT BOTHER WITH NUMBA !
+After investigating the GPU acceleration package 'numba' it has been removed
+from the list of interesting packages. Having followed the intructional video
+performance was markedly slower than using the CPU. The video used code which amplified
+the effect (they refactored a load of manual calulations into functions).
+By commenting out the imports and decorators for CUDA gpu acceleration, the code
+consistently ran much faster. I was not the only one to notice this as the comments
+called them out on the exact same thing. Nvidia had nothing to say on the matter (one of the install
+packages is aroung 400mb?!). One commented mentioned a packed called accelerate (nvidia again) -
+upon searching for this I was led in circles by VERY badly organised web pages, and could find
+no information of substance on the matter.
+
+
+MAIN PLAN:
+
+ - Rewrite whole thing using pandas for datastorage
+ - turtle will be used to illustrate points, no calculations
+ - Only draw turtle journey when good answer is available...
+ - test answers mathmatically rather than manually
+ - write function to calculate distance between euclidean points
+   compare this to turtle method of abs between vectors
+
+ - Maybe introduce some threading / multiprocessing?
+
+ - Represent chromosomes as lists of integers (tuples maybe?)
+moving from strings will require lots of refactoring old stuff
+but as a arbitrary symbolic representation it will be faster
+and perhaps formula could be used during crossover. maybe not
+as typically 0 (zero) doesnt appear in instruction sets... I cant
+imagine mathmatical functions which disclude zero. But then again
+I cant imagine a lot of things, so its still worth investigation.
+
+##############################################################
+
+TEST 1:
+manual fomula vs turtle.Vec2D + abs
+There doesnt seem to be any difference in speed, but need
+a huge list of vectors to test properly
+
+##############################################################
+
+Moving on
+13/07/2019
+
+Having installed anaconda and some of the numpy stack, I have decided to
+continuing pursuing the same project via these methods. Numpy (and Pandas)
+provide methods to vectorise your code - that is to structure it efficiently
+to prepare for execution at a lower level. Ideally a program will replace
+ALL loops with vectorised options, to maximise speed. This can prove to
+be difficult, and I have many questions. For the last week or so I have been
+tinkering with the numpy stack, mainly numpy, matplotlib, pandas, and
+a little scipy. I've managed to rewrite this as a console app, and am at the
+point of refactoring as have arrived at my second tested & scored generation.
+The main bulk of work is done, now to tie up loose ends. The question is currently
+wether to focus on refactoring the ENTIRE program to have no loops, or to
+be satisfied that I have already added many speed benefits (faster lookup
+and distance calculation (but could be faster tho...)).
+My most recent finding is that Pandas isnt really built to handle abstract
+objects, and is better for primitive data. It CAN hold objects, but good luck
+referencing them easily. So my object model could be reworked, to store
+all data in pandas structures instead. Maybe. This came to light while trying
+to vectorise the entire distance measurement loop - right now it loops through
+the locations, using vectorised code to calculate the distance, but seeing
+as the data ends up in a pandas dataframe, there should be a function to
+dump our actual journey encoding (calling it a phenotype) and use some
+numpy stack magic to apply the distance to the whole table(dataframe)
+simultaneously. This would be more efficient, but currently the dataframe
+holds an object which in turn holds an numpy array. Attempts to isolate the
+array and perform operations have seen what I imagine is an overflow of
+data from the rest of the dataframe. Lots of distances I didnt ask for,
+and only some of which appear to tally up with our measurements ( using
+https://ncalculators.com/geometry/length-between-two-points-calculator.htm ).
+Apparently the solution is to store primitive data in the dataframe, giving
+it dedicated rows and columns, rather than trying to store the whole thing
+a parse it for within. Or something. The problem seems to be automation of
+such a thing, and I have yet to successfully prototype my idea for vectorised
+distance measurement. First step will probably be to do that, make a basic
+(working) journey distance calculator without any loops, and then see how well
+this fits in with the bigger code. Its nice that my crossover functions
+integrated cleanly (mostly - but had to repress to single offspring) but
+I should really be looking over and refactoring the whole crossover and
+mutation suite if I plan on using it, it wasnt designed to deal with raw
+integers, so should be checked thoroughly. Also perhaps having two offspring
+for every interaction isnt ideal, perhaps have the user choose how many offspring
+when calling the function, to leave options open.
+
+###################################################################
+
+
+
+
+
+
+
+
